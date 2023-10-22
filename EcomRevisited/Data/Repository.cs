@@ -56,6 +56,7 @@ namespace EcomRevisited.Data
         public async Task<T> GetByConditionAsync(Expression<Func<T, bool>> expression)
         {
             return await _dbSet.FirstOrDefaultAsync(expression);
-        }   
+        }
+
     }
 }
