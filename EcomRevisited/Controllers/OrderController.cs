@@ -20,10 +20,15 @@ namespace EcomRevisited.Controllers
         }
 
         // Create a new order
-        public async Task<IActionResult> Create(Order newOrder)
+        public async Task<IActionResult> Create(Guid cartId, string destinationCountry)
         {
-            await _orderService.CreateOrderAsync(newOrder);
-            return RedirectToAction("Index", new { id = newOrder.Id });
+            var result = await _orderService.CreateOrderAsync(cartId, destinationCountry);
+            if (!result)
+            {
+                return BadRequest();
+            }
+
+            return RedirectToAction("Index", new { id = cartId });
         }
 
         // List all orders

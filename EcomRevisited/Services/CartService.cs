@@ -22,7 +22,7 @@ namespace EcomRevisited.Services
         }
 
         // Add product to cart
-        public async Task<bool> AddProductToCartASync(Guid cartId, Guid productId, int quantity)
+        public async Task<bool> AddProductToCartAsync(Guid cartId, Guid productId, int quantity)
         {
             var isAvailable = await _productService.IsProductAvailableAsync(productId, quantity);
             if (!isAvailable)
@@ -79,15 +79,16 @@ namespace EcomRevisited.Services
         }
 
         // Calculate the total price of the cart
-        public double CalculateTotalPrice(Cart cart)
+        public async Task<double> CalculateTotalPriceAsync(Cart cart)
         {
             double totalPrice = 0;
             foreach (var item in cart.CartItems)
             {
-                var product = _productService.GetProductByIdAsync(item.ProductId).Result;
+                var product = await _productService.GetProductByIdAsync(item.ProductId);
                 totalPrice += product.Price * item.Quantity;
             }
             return totalPrice;
         }
+
     }
 }

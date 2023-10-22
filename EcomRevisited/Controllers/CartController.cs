@@ -19,9 +19,9 @@ namespace EcomRevisited.Controllers
         }
 
         // Add a product to cart
-        public async Task<IActionResult> AddProductToCart(Guid cartId, Guid productId)
+        public async Task<IActionResult> AddProductToCart(Guid cartId, Guid productId, int quantity)
         {
-            await _cartService.AddProductToCartASync(cartId, productId);
+            await _cartService.AddProductToCartAsync(cartId, productId, quantity);
             return RedirectToAction("Index", new { id = cartId });
         }
 
