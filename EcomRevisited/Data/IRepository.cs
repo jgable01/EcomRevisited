@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using EcomRevisited.Models;
+using System.Linq.Expressions;
 
 namespace EcomRevisited.Data
 {
@@ -10,5 +11,7 @@ namespace EcomRevisited.Data
         Task AddAsync(T entity);
         void Remove(T entity);
         void Update(T entity);
+        Task UpdateAsync(T entity);
+        Task<T> GetByConditionAsync(Expression<Func<T, bool>> expression);
     }
 }
