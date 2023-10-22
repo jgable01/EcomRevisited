@@ -18,5 +18,19 @@ namespace EcomRevisited.Controllers
             return View(cart);
         }
 
+        // Add a product to cart
+        public async Task<IActionResult> AddProductToCart(Guid cartId, Guid productId)
+        {
+            await _cartService.AddProductToCartASync(cartId, productId);
+            return RedirectToAction("Index", new { id = cartId });
+        }
+
+        // Remove a product from cart
+        public async Task<IActionResult> RemoveProductFromCart(Guid cartId, Guid productId)
+        {
+            await _cartService.RemoveProductFromCartAsync(cartId, productId);
+            return RedirectToAction("Index", new { id = cartId });
+        }
+
     }
 }

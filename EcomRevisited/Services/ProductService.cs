@@ -16,5 +16,16 @@ namespace EcomRevisited.Services
         {
             return await _productRepository.GetAllAsync();
         }
+
+        public async Task<Product> GetProductByIdAsync(Guid productId)
+        {
+            return await _productRepository.GetByIdAsync(productId);
+        }
+
+        public async Task<bool> IsProductAvailableAsync(Guid productId, int requiredQuantity)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            return product.AvailableQuantity >= requiredQuantity;
+        }
     }
 }

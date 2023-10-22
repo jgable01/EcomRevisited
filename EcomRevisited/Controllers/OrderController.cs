@@ -1,4 +1,5 @@
-﻿using EcomRevisited.Services;
+﻿using EcomRevisited.Models;
+using EcomRevisited.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EcomRevisited.Controllers
@@ -16,6 +17,20 @@ namespace EcomRevisited.Controllers
         {
             var order = await _orderService.GetOrderAsync(id);
             return View(order);
+        }
+
+        // Create a new order
+        public async Task<IActionResult> Create(Order newOrder)
+        {
+            await _orderService.CreateOrderAsync(newOrder);
+            return RedirectToAction("Index", new { id = newOrder.Id });
+        }
+
+        // List all orders
+        public async Task<IActionResult> List()
+        {
+            var orders = await _orderService.GetAllOrdersAsync();
+            return View(orders);
         }
     }
 }

@@ -46,5 +46,16 @@ namespace EcomRevisited.Data
             _dbSet.Update(entity);
             _context.SaveChanges();
         }
+
+        public async Task UpdateAsync(T entity)
+        {
+            _dbSet.Update(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<T> GetByConditionAsync(Expression<Func<T, bool>> expression)
+        {
+            return await _dbSet.FirstOrDefaultAsync(expression);
+        }   
     }
 }
