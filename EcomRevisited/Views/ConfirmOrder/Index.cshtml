@@ -1,0 +1,46 @@
+﻿@using EcomRevisited.ViewModels
+@model ConfirmOrderViewModel
+
+<h1>Confirm Your Order</h1>
+
+<!-- Order Summary -->
+<h2>Order Summary</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderItems)
+        {
+            <tr>
+                <td>@item.ProductTitle</td>
+                <td>@item.Quantity</td>
+                <td>@item.Price</td>
+                <td>@(item.Price * item.Quantity)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Price Calculation -->
+<p>Price of all items: @Model.TotalPrice</p>
+<p>Converted Price: @Model.ConvertedPrice</p>
+<p>Total Price (with taxes): @Model.FinalPrice</p>
+
+<!-- Address and Mailing Code -->
+<h2>Shipping Information</h2>
+<form method="post" action="@Url.Action("SubmitOrder", "Order")">
+    <label for="address">Address:</label>
+    <input type="text" id="address" name="address" required />
+
+    <label for="mailingCode">Mailing Code:</label>
+    <input type="text" id="mailingCode" name="mailingCode" required />
+
+    <input type="hidden" name="DestinationCountry" value="@Model.DestinationCountry" />
+    <input type="submit" value="Submit Order" />
+</form>

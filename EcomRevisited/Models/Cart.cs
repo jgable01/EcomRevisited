@@ -9,6 +9,6 @@ namespace EcomRevisited.Models
         public Guid Id { get; set; }
 
         [ForeignKey("CartId")]
-        public List<CartItem> CartItems { get; set; }
+        public List<CartItem>? CartItems { get; set; } = new List<CartItem>();
     }
 }

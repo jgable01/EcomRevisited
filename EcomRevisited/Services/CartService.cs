@@ -1,5 +1,7 @@
 ﻿using EcomRevisited.Data;
 using EcomRevisited.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace EcomRevisited.Services
 {
@@ -18,8 +20,25 @@ namespace EcomRevisited.Services
 
         public async Task<Cart> GetCartAsync(Guid cartId)
         {
-            return await _cartRepository.GetByIdAsync(cartId);
+            return await _cartRepository.GetByIdWithIncludesAsync(cart => cart.Id == cartId, cart => cart.CartItems);
         }
+
+        public async Task CreateCartAsync(Cart cart)
+        {
+            await _cartRepository.AddAsync(cart);
+        }
+
+        public async Task<Cart> GetOrCreateCartAsync(Guid cartId)
+        {
+            var cart = await _cartRepository.GetByIdAsync(cartId);
+            if (cart == null)
+            {
+                cart = new Cart { Id = cartId };
+                await _cartRepository.AddAsync(cart);
+            }
+            return cart;
+        }
+
 
         // Add product to cart
         public async Task<bool> AddProductToCartAsync(Guid cartId, Guid productId, int quantity)
@@ -34,6 +53,12 @@ namespace EcomRevisited.Services
 
             var cart = await _cartRepository.GetByIdAsync(cartId);
             var product = await _productService.GetProductByIdAsync(productId);
+
+            if (cart == null)
+            {
+                cart = new Cart { Id = cartId };
+                await _cartRepository.AddAsync(cart);
+            }
 
             cart.CartItems.Add(new CartItem { ProductId = productId, Quantity = quantity });
             await _cartRepository.UpdateAsync(cart);
@@ -88,6 +113,44 @@ namespace EcomRevisited.Services
                 totalPrice += product.Price * item.Quantity;
             }
             return totalPrice;
+        }
+
+        // Increase product quantity in the cart
+        public async Task<bool> IncreaseProductQuantityAsync(Guid cartId, Guid productId)
+        {
+            var cart = await _cartRepository.GetByIdAsync(cartId);
+            var itemToUpdate = cart.CartItems.FirstOrDefault(item => item.ProductId == productId);
+            var product = await _productService.GetProductByIdAsync(productId);
+
+            if (itemToUpdate != null && product != null)
+            {
+                if (itemToUpdate.Quantity + 1 <= product.AvailableQuantity)
+                {
+                    itemToUpdate.Quantity += 1;
+                    await _cartRepository.UpdateAsync(cart);
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("Reached the maximum available quantity for this product.");
+                    return false;
+                }
+            }
+            return false;
+        }
+
+
+
+        // Decrease product quantity in the cart
+        public async Task DecreaseProductQuantityAsync(Guid cartId, Guid productId)
+        {
+            var cart = await _cartRepository.GetByIdAsync(cartId);
+            var itemToUpdate = cart.CartItems.FirstOrDefault(item => item.ProductId == productId);
+            if (itemToUpdate != null && itemToUpdate.Quantity > 1)
+            {
+                itemToUpdate.Quantity -= 1;
+                await _cartRepository.UpdateAsync(cart);
+            }
         }
 
     }

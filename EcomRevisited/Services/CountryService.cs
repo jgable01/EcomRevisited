@@ -20,7 +20,7 @@
                 return await _countryRepository.GetByIdAsync(id);
             }
 
-            public async Task<Country> GetCountryByNameAsync(string name)
+            public virtual async Task<Country> GetCountryByNameAsync(string name)
             {
                 return await _countryRepository.GetByConditionAsync(country => country.Name == name);
             }

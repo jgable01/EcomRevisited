@@ -25,7 +25,22 @@ namespace EcomRevisited.Services
         public async Task<bool> IsProductAvailableAsync(Guid productId, int requiredQuantity)
         {
             var product = await _productRepository.GetByIdAsync(productId);
-            return product.AvailableQuantity >= requiredQuantity;
+
+            if (product == null)
+            {
+                Console.WriteLine($"Product with ID {productId} does not exist.");
+                return false;
+            }
+
+            if (product.AvailableQuantity < requiredQuantity)
+            {
+                Console.WriteLine($"Insufficient quantity for Product ID {productId}. Required: {requiredQuantity}, Available: {product.AvailableQuantity}");
+                return false;
+            }
+
+            return true;
         }
+
+
     }
 }

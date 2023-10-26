@@ -1,36 +1,150 @@
-﻿using EcomRevisited.Services;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;  // Needed for session
+using EcomRevisited.Services;
+using EcomRevisited.ViewModels;
+using EcomRevisited.Models;
 
 namespace EcomRevisited.Controllers
 {
     public class CartController : Controller
     {
         private readonly CartService _cartService;
+        private readonly ProductService _productService;
+        private readonly OrderService _orderService;
 
-        public CartController(CartService cartService)
+        public CartController(CartService cartService, ProductService productService, OrderService orderService)
         {
             _cartService = cartService;
+            _productService = productService;
+            _orderService = orderService;
         }
 
-        public async Task<IActionResult> Index(Guid id)
+        private async Task<Guid> GetOrCreateCartId()
         {
-            var cart = await _cartService.GetCartAsync(id);
-            return View(cart);
+            // For demonstration, using a hardcoded cart ID
+            // In a real-world application, we would fetch this from a database
+            Guid cartId = Guid.Parse("12345678-1234-5678-1234-567812345678");  
+
+            // Check if the cart exists
+            var cart = await _cartService.GetCartAsync(cartId);
+            if (cart == null)
+            {
+                // If the cart doesn't exist, create a new one
+                cart = new Cart { Id = cartId };
+                await _cartService.CreateCartAsync(cart);  
+            }
+
+            return cartId;
         }
 
-        // Add a product to cart
-        public async Task<IActionResult> AddProductToCart(Guid cartId, Guid productId, int quantity)
+        [HttpGet]
+        public async Task<IActionResult> Index()
         {
-            await _cartService.AddProductToCartAsync(cartId, productId, quantity);
-            return RedirectToAction("Index", new { id = cartId });
+            var cartId = await GetOrCreateCartId();
+            var cart = await _cartService.GetCartAsync(cartId);
+
+            if (cart == null || cart.CartItems == null)
+            {
+                return View(new CartViewModel());
+            }
+
+            double totalPrice = 0;
+            var cartItemViewModels = new List<CartItemViewModel>();
+
+            foreach (var item in cart.CartItems)
+            {
+                var product = await _productService.GetProductByIdAsync(item.ProductId);
+                if (product != null)
+                {
+                    totalPrice += product.Price * item.Quantity;
+                    cartItemViewModels.Add(new CartItemViewModel
+                    {
+                        ProductId = item.ProductId,
+                        ProductName = product.Name,
+                        Quantity = item.Quantity,
+                        Price = product.Price,
+                        ImageUrl = product.ImageUrl  
+                    });
+                }
+            }
+
+
+            var viewModel = new CartViewModel
+            {
+                Id = cart.Id,
+                TotalPrice = totalPrice,
+                CartItems = cartItemViewModels
+            };
+
+            return View(viewModel);
         }
 
-        // Remove a product from cart
-        public async Task<IActionResult> RemoveProductFromCart(Guid cartId, Guid productId)
+
+
+        [HttpPost]
+        public async Task<IActionResult> AddProductToCart(Guid productId, int quantity)
         {
+            var cartId = await GetOrCreateCartId();
+            Console.WriteLine($"Adding product {productId} to cart {cartId}");
+            bool success = await _cartService.AddProductToCartAsync(cartId, productId, quantity);
+            if (!success)
+            {
+                Console.WriteLine($"Failed to add product {productId} to cart {cartId}");
+                return BadRequest("Could not add product to cart.");
+            }
+            Console.WriteLine($"Successfully added product {productId} to cart {cartId}");
+            return RedirectToAction("Index", "Catalogue");
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveProductFromCart(Guid productId)
+        {
+            var cartId = await GetOrCreateCartId();
             await _cartService.RemoveProductFromCartAsync(cartId, productId);
-            return RedirectToAction("Index", new { id = cartId });
+            return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> IncreaseProductQuantity(Guid productId)
+        {
+            var cartId = await GetOrCreateCartId();
+            bool success = await _cartService.IncreaseProductQuantityAsync(cartId, productId);
+            if (!success)
+            {
+                Console.WriteLine("Could not increase quantity. Not enough stock available.");
+            }
+            return RedirectToAction("Index");
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> DecreaseProductQuantity(Guid productId)
+        {
+            var cartId = await GetOrCreateCartId();
+            await _cartService.DecreaseProductQuantityAsync(cartId, productId);
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Checkout()
+        {
+            var cartId = await GetOrCreateCartId();
+            // Assuming "Canada" as the destination country for this example.
+            // In a real-world application, we would fetch this from the user's profile.
+            var newOrderId = await _orderService.CreateOrderAsync(cartId, "Canada");
+
+            if (newOrderId != Guid.Empty)  
+            {
+                return RedirectToAction("Index", "Order", new { id = newOrderId });
+            }
+            else
+            {
+                return BadRequest("Could not complete the checkout.");
+            }
+        }
     }
 }

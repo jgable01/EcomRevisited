@@ -1,6 +1,6 @@
-﻿namespace EcomRevisited.Models
+﻿namespace EcomRevisited.ViewModels
 {
-    public class Product
+    public class ProductViewModel
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
@@ -10,4 +10,3 @@
         public string ImageUrl { get; set; }
     }
 }
-

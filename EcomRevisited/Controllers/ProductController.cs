@@ -1,5 +1,8 @@
 ﻿using EcomRevisited.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using System.Linq;
+using EcomRevisited.ViewModels;
 
 namespace EcomRevisited.Controllers
 {
@@ -12,10 +15,29 @@ namespace EcomRevisited.Controllers
             _productService = productService;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var products = await _productService.GetAllProductsAsync();
-            return View(products);
+
+            // Convert to ViewModel
+            var productViewModels = products.Select(p => new ProductViewModel
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                AvailableQuantity = p.AvailableQuantity,
+                Price = p.Price,
+                ImageUrl = p.ImageUrl
+            }).ToList();
+
+
+            var productListViewModel = new ProductListViewModel
+            {
+                Products = productViewModels
+            };
+
+            return View(productListViewModel);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace EcomRevisited.Pages
+namespace EcomRevisited.Pages.Home
 {
     public class IndexModel : PageModel
     {

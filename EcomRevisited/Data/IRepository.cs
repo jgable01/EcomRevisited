@@ -13,5 +13,8 @@ namespace EcomRevisited.Data
         void Update(T entity);
         Task UpdateAsync(T entity);
         Task<T> GetByConditionAsync(Expression<Func<T, bool>> expression);
+        Task<T> GetByIdWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
+
+
     }
 }
