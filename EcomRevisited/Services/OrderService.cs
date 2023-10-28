@@ -13,6 +13,7 @@ namespace EcomRevisited.Services
         private readonly IRepository<Country> _countryRepository;
         private readonly CountryService _countryService;
         private readonly ProductService _productService;
+        private readonly CartService _cartService;
 
         private readonly EcomDbContext _context;
 
@@ -23,6 +24,7 @@ namespace EcomRevisited.Services
             IRepository<Country> countryRepository,
             CountryService countryService,
             ProductService productService,
+            CartService cartService,
             EcomDbContext context)  // Inject EcomDbContext here
         {
             _orderRepository = orderRepository;
@@ -31,14 +33,14 @@ namespace EcomRevisited.Services
             _countryRepository = countryRepository;
             _countryService = countryService;
             _productService = productService;
+            _cartService = cartService;
             _context = context;  // Initialize the context
         }
-
 
         public async Task<Order> GetOrderAsync(Guid orderId)
         {
             Console.WriteLine($"Fetching order with ID: {orderId}");
-            var order = await _orderRepository.GetByIdAsync(orderId);
+            var order = await _orderRepository.GetByIdWithIncludesAsync(o => o.Id == orderId, "OrderItems");
             if (order == null)
             {
                 Console.WriteLine($"Order with ID: {orderId} not found.");
@@ -50,7 +52,6 @@ namespace EcomRevisited.Services
             return order;
         }
 
-
         public async Task<Guid> CreateOrderAsync(Guid cartId, string destinationCountry, string mailingCode, string address)
         {
             using (var transaction = await _context.Database.BeginTransactionAsync())  // Start a new transaction
@@ -61,6 +62,8 @@ namespace EcomRevisited.Services
                     if (cartId == Guid.Empty || string.IsNullOrEmpty(destinationCountry))
                     {
                         Console.WriteLine("Invalid parameters.");
+                        // Roll back the transaction
+                        transaction.Rollback();
                         return Guid.Empty;
                     }
 
@@ -70,6 +73,8 @@ namespace EcomRevisited.Services
                     if (cart == null)
                     {
                         Console.WriteLine("Cart not found.");
+                        // Roll back the transaction
+                        transaction.Rollback();
                         return Guid.Empty;
                     }
 
@@ -77,6 +82,8 @@ namespace EcomRevisited.Services
                     if (!cart.CartItems.Any())
                     {
                         Console.WriteLine("Cart is empty.");
+                        // Roll back the transaction
+                        transaction.Rollback();
                         return Guid.Empty;
                     }
 
@@ -85,19 +92,9 @@ namespace EcomRevisited.Services
                     if (country == null)
                     {
                         Console.WriteLine("Destination country not found.");
+                        // Roll back the transaction
+                        transaction.Rollback();
                         return Guid.Empty;
-                    }
-
-                    // Check for product availability
-                    foreach (var cartItem in cart.CartItems)
-                    {
-                        var isAvailable = await _productService.IsProductAvailableAsync(cartItem.ProductId, cartItem.Quantity);
-                        if (!isAvailable)
-                        {
-                            // Handle the case where a product is out of stock
-                            Console.WriteLine($"The product with ID {cartItem.ProductId} is out of stock.");
-                            return Guid.Empty;
-                        }
                     }
 
                     // Initialize an Order object from the Cart
@@ -105,34 +102,13 @@ namespace EcomRevisited.Services
                     {
                         OrderItems = new List<OrderItem>(),
                         DestinationCountry = destinationCountry,
-                        Address = address,  // Add a default address
-                        MailingCode = mailingCode,  // Add a default mailing code
-                        NumberOfItems = cart.CartItems.Count
+                        Address = address,
+                        MailingCode = mailingCode,
+                        // Updated code to calculate total number of items in the cart
+                        NumberOfItems = cart.CartItems.Sum(item => item.Quantity),
                     };
 
-                    // Copy items from Cart to Order and update product quantities
-                    foreach (var cartItem in cart.CartItems)
-                    {
-                        var orderItem = new OrderItem
-                        {
-                            ProductId = cartItem.ProductId,
-                            Quantity = cartItem.Quantity
-                        };
-                        order.OrderItems.Add(orderItem);
-
-                        // Update the available quantity for each product
-                        var product = await _productRepository.GetByIdAsync(cartItem.ProductId);
-                        product.AvailableQuantity -= cartItem.Quantity;
-                        await _productRepository.UpdateAsync(product);
-                    }
-
-                    // Calculate the initial total price based on the cart items
-                    double totalPrice = 0;
-                    foreach (var orderItem in order.OrderItems)
-                    {
-                        var product = await _productRepository.GetByIdAsync(orderItem.ProductId);
-                        totalPrice += product.Price * orderItem.Quantity;
-                    }
+                    var totalPrice = await _cartService.CalculateTotalPriceAsync(cart);
                     order.TotalPrice = totalPrice;
 
                     // Apply country-specific rates
@@ -142,6 +118,11 @@ namespace EcomRevisited.Services
 
                     await _orderRepository.AddAsync(order);
                     transaction.Commit();  // Commit the transaction if everything is successful
+
+                    // Empty the cart
+                    cart.CartItems.Clear();
+                    await _cartRepository.UpdateAsync(cart);
+
                     Console.WriteLine($"Successfully created order with ID: {order.Id}");
                     return order.Id;
                 }
@@ -153,6 +134,8 @@ namespace EcomRevisited.Services
                 }
             }
         }
+
+
 
         // Get all orders
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()

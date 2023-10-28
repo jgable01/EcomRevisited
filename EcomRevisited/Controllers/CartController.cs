@@ -82,22 +82,39 @@ namespace EcomRevisited.Controllers
             return View(viewModel);
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> AddProductToCart(Guid productId, int quantity)
         {
             var cartId = await GetOrCreateCartId();
-            Console.WriteLine($"Adding product {productId} to cart {cartId}");
+            // Check if the product is available
+            var isAvailable = await _productService.IsProductAvailableAsync(productId, quantity);
+            if (!isAvailable)
+            {
+                TempData["OutOfStockProductId"] = productId;
+                return RedirectToAction("Index", "Catalogue");
+            }
             bool success = await _cartService.AddProductToCartAsync(cartId, productId, quantity);
             if (!success)
             {
-                Console.WriteLine($"Failed to add product {productId} to cart {cartId}");
-                return BadRequest("Could not add product to cart.");
+                return BadRequest("Could not add product to cart. Not enough stock available.");
             }
-            Console.WriteLine($"Successfully added product {productId} to cart {cartId}");
             return RedirectToAction("Index", "Catalogue");
         }
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> IncreaseProductQuantity(Guid productId)
+        {
+            var cartId = await GetOrCreateCartId();
+            bool success = await _cartService.IncreaseProductQuantityAsync(cartId, productId);
+            if (!success)
+            {
+                return BadRequest("Could not increase quantity. Not enough stock available.");
+            }
+            return RedirectToAction("Index");
+        }
+
 
 
         [HttpPost]
@@ -107,19 +124,6 @@ namespace EcomRevisited.Controllers
             await _cartService.RemoveProductFromCartAsync(cartId, productId);
             return RedirectToAction("Index");
         }
-
-        [HttpPost]
-        public async Task<IActionResult> IncreaseProductQuantity(Guid productId)
-        {
-            var cartId = await GetOrCreateCartId();
-            bool success = await _cartService.IncreaseProductQuantityAsync(cartId, productId);
-            if (!success)
-            {
-                Console.WriteLine("Could not increase quantity. Not enough stock available.");
-            }
-            return RedirectToAction("Index");
-        }
-
 
         [HttpPost]
         public async Task<IActionResult> DecreaseProductQuantity(Guid productId)

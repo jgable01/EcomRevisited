@@ -41,6 +41,19 @@ namespace EcomRevisited.Services
             return true;
         }
 
+        public async Task<bool> UpdateProductQuantity(Guid productId, int deltaQuantity)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product != null && product.AvailableQuantity >= deltaQuantity)
+            {
+                product.AvailableQuantity += deltaQuantity;
+                await _productRepository.UpdateAsync(product);
+                return true;
+            }
+            return false;
+        }
+
+
 
     }
 }

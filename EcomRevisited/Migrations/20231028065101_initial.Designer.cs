@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EcomRevisited.Migrations
 {
     [DbContext(typeof(EcomDbContext))]
-    [Migration("20231027190749_initial")]
+    [Migration("20231028065101_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -38,11 +38,11 @@ namespace EcomRevisited.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("815a93dd-6cf6-48a1-a77b-a59a73550320")
+                            Id = new Guid("1f6fe05c-ad70-4993-8108-5fff52aff96d")
                         },
                         new
                         {
-                            Id = new Guid("10ee2d15-6874-4f03-9cb8-c7d2c7fa7d28")
+                            Id = new Guid("8d7dab5e-0bb4-42e2-b2d2-d99882e6405f")
                         });
                 });
 
@@ -93,21 +93,21 @@ namespace EcomRevisited.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("56945e0a-9e23-4f17-ab18-a4258595dc82"),
+                            Id = new Guid("237cdf59-8e6d-4fe9-ba8d-608243362a44"),
                             ConversionRate = 1.0,
                             Name = "Canada",
                             TaxRate = 0.070000000000000007
                         },
                         new
                         {
-                            Id = new Guid("7c9b37ca-a53a-4436-a970-5d8dc8a03ab7"),
+                            Id = new Guid("01c5ca0b-273e-452b-a76b-d0c3d92978f8"),
                             ConversionRate = 1.1000000000000001,
                             Name = "United States",
                             TaxRate = 0.050000000000000003
                         },
                         new
                         {
-                            Id = new Guid("5db1e40c-4d46-4a49-9812-51ac152f9b49"),
+                            Id = new Guid("7cf68b5c-8ce2-467f-8c6e-0df72c037753"),
                             ConversionRate = 1.3,
                             Name = "United Kingdom",
                             TaxRate = 0.10000000000000001
@@ -131,6 +131,9 @@ namespace EcomRevisited.Migrations
                     b.Property<string>("MailingCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NumberOfItems")
+                        .HasColumnType("int");
 
                     b.Property<double>("TotalPrice")
                         .HasColumnType("float");
@@ -193,7 +196,7 @@ namespace EcomRevisited.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("bd4d69f3-dfc3-484d-ac28-afde337f405c"),
+                            Id = new Guid("7c9e176f-496c-4151-a1d3-27aeeabbaccd"),
                             AvailableQuantity = 10,
                             Description = "High performance laptop",
                             ImageUrl = "https://www.lifeofpix.com/wp-content/uploads/2018/05/p-244-ae-mint-005-1600x1169.jpg",
@@ -202,7 +205,7 @@ namespace EcomRevisited.Migrations
                         },
                         new
                         {
-                            Id = new Guid("670f85a3-c926-48a9-83a6-9acb5301f566"),
+                            Id = new Guid("1644824e-e3bc-4892-8041-00ea6cdb77d3"),
                             AvailableQuantity = 20,
                             Description = "Latest model",
                             ImageUrl = "https://media.istockphoto.com/id/1377877660/vector/realistic-mobile-phone-mockup-cellphone-app-template-isolated-stock-vector.jpg?s=612x612&w=0&k=20&c=Xw2padf6w33h9eQFFz83PL0reGEMdu1FtFsuI5G5Nf0=",
@@ -211,7 +214,7 @@ namespace EcomRevisited.Migrations
                         },
                         new
                         {
-                            Id = new Guid("86229d29-f6b3-4662-b79a-92efde4cb9db"),
+                            Id = new Guid("5d0f679f-1be1-4865-9b58-2dacdb4268d2"),
                             AvailableQuantity = 30,
                             Description = "Wireless",
                             ImageUrl = "https://images.pexels.com/photos/3945667/pexels-photo-3945667.jpeg?cs=srgb&dl=pexels-cottonbro-studio-3945667.jpg&fm=jpg",
@@ -220,7 +223,7 @@ namespace EcomRevisited.Migrations
                         },
                         new
                         {
-                            Id = new Guid("527d18ab-692b-4ff7-9992-899e388bb9ec"),
+                            Id = new Guid("cffd22ff-b06f-43e8-8ccf-e4cbb3b23783"),
                             AvailableQuantity = 5,
                             Description = "Digital SLR",
                             ImageUrl = "https://images.pexels.com/photos/274973/pexels-photo-274973.jpeg?cs=srgb&dl=pexels-pixabay-274973.jpg&fm=jpg",
@@ -229,7 +232,7 @@ namespace EcomRevisited.Migrations
                         },
                         new
                         {
-                            Id = new Guid("f3517d3b-824d-4e21-844b-cebe8e6c9033"),
+                            Id = new Guid("f86511b0-5408-40a3-9b62-97764cdb31f4"),
                             AvailableQuantity = 15,
                             Description = "With fitness tracking",
                             ImageUrl = "https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?cs=srgb&dl=pexels-alexandr-borecky-393047.jpg&fm=jpg",

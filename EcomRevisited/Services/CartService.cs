@@ -39,10 +39,17 @@ namespace EcomRevisited.Services
             return cart;
         }
 
-        // Add product to cart
         public async Task<bool> AddProductToCartAsync(Guid cartId, Guid productId, int quantity)
         {
+            var product = await _productService.GetProductByIdAsync(productId);
+            var cart = await _cartRepository.GetByIdAsync(cartId);
+
+            var existingItem = cart.CartItems.FirstOrDefault(x => x.ProductId == productId);
+
+            int newQuantity = (existingItem != null) ? existingItem.Quantity + quantity : quantity;
+
             var isAvailable = await _productService.IsProductAvailableAsync(productId, quantity);
+
             if (!isAvailable)
             {
                 // Handle the case where the product is out of stock
@@ -50,24 +57,30 @@ namespace EcomRevisited.Services
                 return false;
             }
 
-            var cart = await _cartRepository.GetByIdAsync(cartId);
-            var product = await _productService.GetProductByIdAsync(productId);
-
             if (cart == null)
             {
                 cart = new Cart { Id = cartId };
                 await _cartRepository.AddAsync(cart);
             }
+            if (existingItem != null)
+            {
+                existingItem.Quantity += quantity;  // Update quantity
+            }
+            else
+            {
+                cart.CartItems.Add(new CartItem { ProductId = productId, Quantity = quantity });
+            }
 
-            cart.CartItems.Add(new CartItem { ProductId = productId, Quantity = quantity });
             await _cartRepository.UpdateAsync(cart);
 
-            product.AvailableQuantity -= quantity;
-            await _productRepository.UpdateAsync(product);
+            bool success = await _productService.UpdateProductQuantity(productId, -quantity);
+            if (!success)
+            {
+                return false;
+            }
 
             return true;
         }
-
 
         // Remove product from cart
         public async Task RemoveProductFromCartAsync(Guid cartId, Guid productId)
@@ -76,6 +89,9 @@ namespace EcomRevisited.Services
             var cartItem = cart.CartItems.FirstOrDefault(x => x.ProductId == productId);
             if (cartItem != null)
             {
+                // Use centralized method to update product quantity
+                await _productService.UpdateProductQuantity(productId, cartItem.Quantity);
+
                 cart.CartItems.Remove(cartItem);
                 await _cartRepository.UpdateAsync(cart);
             }
@@ -138,19 +154,22 @@ namespace EcomRevisited.Services
             return false;
         }
 
-
-
         // Decrease product quantity in the cart
         public async Task DecreaseProductQuantityAsync(Guid cartId, Guid productId)
         {
             var cart = await _cartRepository.GetByIdAsync(cartId);
             var itemToUpdate = cart.CartItems.FirstOrDefault(item => item.ProductId == productId);
-            if (itemToUpdate != null && itemToUpdate.Quantity > 1)
+            if (itemToUpdate != null)
             {
                 itemToUpdate.Quantity -= 1;
+                if (itemToUpdate.Quantity <= 0)
+                {
+                    cart.CartItems.Remove(itemToUpdate);
+                }
                 await _cartRepository.UpdateAsync(cart);
             }
         }
+
 
     }
 }

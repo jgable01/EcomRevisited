@@ -1,6 +1,7 @@
 ﻿using EcomRevisited.Services;
 using EcomRevisited.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,7 +20,9 @@ public class CatalogueController : Controller
         var products = await _productService.GetAllProductsAsync();
         if (!string.IsNullOrEmpty(searchString))
         {
-            products = products.Where(p => p.Name.Contains(searchString) || p.Description.Contains(searchString)).ToList();
+            products = products.Where(p => p.Name.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                           p.Description.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
+                               .ToList();
         }
 
         var viewModel = new ProductListViewModel

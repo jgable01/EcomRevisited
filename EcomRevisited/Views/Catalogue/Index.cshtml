@@ -1,49 +1,22 @@
-﻿@model EcomRevisited.ViewModels.ProductListViewModel
-
-<!-- Custom CSS -->
-<style>
-    .product-card:hover {
-        transform: scale(1.02);
-        transition: transform .25s ease-in-out;
-    }
-
-    .search-bar {
-        border-radius: 50px;
-    }
-
-    .search-button {
-        border-radius: 0 50px 50px 0;
-    }
-
-    .rounded-pill {
-        border-radius: 50px !important;
-    }
-
-    @@media (max-width: 767px) {
-        .product-card {
-            margin: 0 auto;  
-        }
-    }
-</style>
-
-<div class="container">
+﻿<div class="container">
     <h1 class="text-center my-5">Catalogue</h1>
 
     <!-- Search Bar -->
     <div class="d-flex justify-content-center mb-5">
         <div class="input-group w-50">
-            <input type="text" class="form-control search-bar" placeholder="Search for products" aria-label="Product search">
+            <input type="text" id="searchBar" class="form-control search-bar" placeholder="Search for products" aria-label="Product search">
             <div class="input-group-append">
-                <button class="btn btn-outline-secondary search-button" type="button">Search</button>
+                <button class="btn btn-outline-secondary search-button" type="button" id="serverSearch">Search</button>
+                <button class="btn btn-outline-secondary ml-2" id="showAllButton" type="button">Show All</button>
             </div>
         </div>
     </div>
 
     <!-- Product List -->
-    <div class="row">
+    <div class="row" id="productList">
         @foreach (var product in Model.Products)
         {
-            <div class="col-md-4 mb-5 d-flex align-items-stretch">
+            <div class="col-md-4 mb-5 d-flex align-items-stretch product-item" data-name="@product.Name" data-description="@product.Description">
                 <div class="card product-card w-100">
                     <img class="card-img-top" src="@product.ImageUrl" alt="@product.Name" height="200">
                     <div class="card-body">
@@ -51,7 +24,9 @@
                         <p class="card-text">@product.Description</p>
                         <p class="card-text"><strong>@product.Price $</strong></p>
                         <div class="d-flex justify-content-between">
-                            @if (product.AvailableQuantity > 0)
+                            @if (product.AvailableQuantity > 0 &&
+                           (TempData["OutOfStockProductId"] == null ||
+                           product.Id.ToString() != TempData["OutOfStockProductId"].ToString()))
                             {
                                 <form asp-action="AddProductToCart" asp-controller="Cart" method="post">
                                     <input type="hidden" name="productId" value="@product.Id" />
@@ -70,3 +45,61 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        console.log('Script loaded');
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchBar = document.getElementById('searchBar');
+            const serverSearchButton = document.getElementById('serverSearch');
+            const showAllButton = document.getElementById('showAllButton');
+            const productItems = document.querySelectorAll('.product-item');
+
+            console.log('DOM fully loaded and parsed');
+
+            // Function to normalize a string
+            const normalizeString = (str) => str.toLowerCase().trim();
+
+            searchBar.addEventListener('input', function () {
+                console.log('Input event triggered');
+                const searchString = normalizeString(searchBar.value);
+                console.log(`Search string: ${searchString}`);
+
+                productItems.forEach((item) => {
+                    const name = normalizeString(item.getAttribute('data-name'));
+                    const description = normalizeString(item.getAttribute('data-description'));
+                    console.log(`Checking against name: ${name}, description: ${description}`);
+
+                    if (name.includes(searchString) || description.includes(searchString)) {
+                        item.style.display = 'flex';
+                        item.classList.add('d-flex'); 
+                    } else {
+                        item.style.display = 'none';
+                        item.classList.remove('d-flex'); // Remove flex class to prevent bootstrap from overriding display: none
+                    }
+                });
+            });
+
+            // Detect Enter key press
+            searchBar.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    serverSearchButton.click();
+                }
+            });
+
+            serverSearchButton.addEventListener('click', function () {
+                console.log('Search button clicked');
+                const searchString = normalizeString(searchBar.value);
+                window.location.href = `/Catalogue/Index?searchString=${searchString}`;
+            });
+
+            showAllButton.addEventListener('click', function () {
+                console.log('Show All button clicked');
+                window.location.href = '/Catalogue/Index';
+            });
+        });
+    </script>
+}
+
+

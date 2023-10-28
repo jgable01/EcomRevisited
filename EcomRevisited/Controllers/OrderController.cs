@@ -47,6 +47,7 @@ namespace EcomRevisited.Controllers
         }
 
 
+
         [HttpPost]
         public async Task<IActionResult> Create(Guid cartId, string destinationCountry, string mailingCode, string address)
         {
@@ -178,7 +179,7 @@ namespace EcomRevisited.Controllers
                     ProductId = item.Id,
                     ProductTitle = item.Product.Name,
                     Quantity = item.Quantity,
-                    Price = item.Product.Price,
+                    Price = item.Product.Price
                 }).ToList();
             }
 
