@@ -24,6 +24,11 @@
             {
                 return await _countryRepository.GetByConditionAsync(country => country.Name == name);
             }
+            public async Task<IEnumerable<Country>> GetAllCountriesAsync()
+            {
+                return await _countryRepository.GetAllAsync();
+            }
+
         }
     }
 

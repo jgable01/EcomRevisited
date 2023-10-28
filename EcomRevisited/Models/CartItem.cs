@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EcomRevisited.Models
 {
@@ -9,5 +8,8 @@ namespace EcomRevisited.Models
         [ForeignKey("CartId")]
         public Guid ProductId { get; set; }
         public int Quantity { get; set; }
+
+        // Navigation property to Product
+        public virtual Product Product { get; set; }
     }
 }

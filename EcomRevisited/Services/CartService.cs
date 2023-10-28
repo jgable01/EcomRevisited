@@ -20,7 +20,7 @@ namespace EcomRevisited.Services
 
         public async Task<Cart> GetCartAsync(Guid cartId)
         {
-            return await _cartRepository.GetByIdWithIncludesAsync(cart => cart.Id == cartId, cart => cart.CartItems);
+            return await _cartRepository.GetByIdWithIncludesAsync(cart => cart.Id == cartId, "CartItems.Product");
         }
 
         public async Task CreateCartAsync(Cart cart)
@@ -38,7 +38,6 @@ namespace EcomRevisited.Services
             }
             return cart;
         }
-
 
         // Add product to cart
         public async Task<bool> AddProductToCartAsync(Guid cartId, Guid productId, int quantity)

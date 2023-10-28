@@ -11,5 +11,6 @@ namespace EcomRevisited.Models
         public string Address { get; set; }
         public string MailingCode { get; set; }
         public double TotalPrice { get; set; }
+        public int NumberOfItems { get; set; }
     }
 }

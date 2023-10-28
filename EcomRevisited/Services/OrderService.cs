@@ -1,6 +1,7 @@
 ﻿using EcomRevisited.Data;
 using EcomRevisited.Models;
 using EcomRevisited.Services.EcomRevisited.Services;
+using System.Data.Entity;
 
 namespace EcomRevisited.Services
 {
@@ -50,7 +51,7 @@ namespace EcomRevisited.Services
         }
 
 
-        public async Task<Guid> CreateOrderAsync(Guid cartId, string destinationCountry)
+        public async Task<Guid> CreateOrderAsync(Guid cartId, string destinationCountry, string mailingCode, string address)
         {
             using (var transaction = await _context.Database.BeginTransactionAsync())  // Start a new transaction
             {
@@ -65,6 +66,7 @@ namespace EcomRevisited.Services
 
                     // Fetch cart and validate it exists
                     var cart = await _cartRepository.GetByIdAsync(cartId);
+                    cart = await _cartRepository.GetByIdWithIncludesAsync(cart => cart.Id == cartId, "CartItems.Product");
                     if (cart == null)
                     {
                         Console.WriteLine("Cart not found.");
@@ -99,12 +101,13 @@ namespace EcomRevisited.Services
                     }
 
                     // Initialize an Order object from the Cart
-                    Order order = new Order
+                    Order order = new()
                     {
                         OrderItems = new List<OrderItem>(),
                         DestinationCountry = destinationCountry,
-                        Address = "Default Address",  // Add a default address
-                        MailingCode = "Default Mailing Code"  // Add a default mailing code
+                        Address = address,  // Add a default address
+                        MailingCode = mailingCode,  // Add a default mailing code
+                        NumberOfItems = cart.CartItems.Count
                     };
 
                     // Copy items from Cart to Order and update product quantities
@@ -184,6 +187,39 @@ namespace EcomRevisited.Services
 
             order.TotalPrice = convertedPrice + taxAmount;
             await _orderRepository.UpdateAsync(order);
+        }
+
+        public async Task<bool> ConfirmOrderAsync(ConfirmOrderViewModel model)
+        {
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    // Create new Order entity
+                    var newOrder = new Order
+                    {
+                        DestinationCountry = model.DestinationCountry,
+                        Address = model.Address,
+                        MailingCode = model.MailingCode,
+                        TotalPrice = model.FinalPrice,
+                        OrderItems = model.OrderItems.Select(x => new OrderItem
+                        {
+                            ProductId = x.ProductId,  // Use the ProductId from the ViewModel
+                            Quantity = x.Quantity
+                        }).ToList()
+                    };
+
+                    await _orderRepository.AddAsync(newOrder);
+                    transaction.Commit();
+
+                    return true;
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    return false;
+                }
+            }
         }
     }
 }

@@ -58,7 +58,7 @@ namespace EcomRevisited.Data
             return await _dbSet.FirstOrDefaultAsync(expression);
         }
 
-        public async Task<T> GetByIdWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
+        public async Task<T> GetByIdWithIncludesAsync(Expression<Func<T, bool>> predicate, params string[] includeProperties)
         {
             IQueryable<T> query = _dbSet;
             foreach (var includeProperty in includeProperties)
@@ -67,6 +67,7 @@ namespace EcomRevisited.Data
             }
             return await query.FirstOrDefaultAsync(predicate);
         }
+
 
     }
 }

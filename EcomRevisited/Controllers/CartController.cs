@@ -133,18 +133,10 @@ namespace EcomRevisited.Controllers
         public async Task<IActionResult> Checkout()
         {
             var cartId = await GetOrCreateCartId();
-            // Assuming "Canada" as the destination country for this example.
-            // In a real-world application, we would fetch this from the user's profile.
-            var newOrderId = await _orderService.CreateOrderAsync(cartId, "Canada");
 
-            if (newOrderId != Guid.Empty)  
-            {
-                return RedirectToAction("Index", "Order", new { id = newOrderId });
-            }
-            else
-            {
-                return BadRequest("Could not complete the checkout.");
-            }
+            // Redirect to the ConfirmOrder action in OrderController with the cartId as a parameter
+            return RedirectToAction("ConfirmOrder", "Order", new { cartId = cartId });
         }
+
     }
 }
