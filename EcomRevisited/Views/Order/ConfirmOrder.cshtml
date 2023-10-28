@@ -40,7 +40,7 @@
 
         <div class="form-group">
             <label for="DestinationCountry">Select Destination Country:</label>
-            <select class="form-control" asp-for="DestinationCountry" asp-items="ViewBag.CountryList"></select>
+            <select class="form-control" id="DestinationCountry" asp-for="DestinationCountry" asp-items="ViewBag.CountryList"></select>
         </div>
 
         <div class="form-group">
@@ -53,11 +53,48 @@
             <input type="text" class="form-control" asp-for="MailingCode" required />
         </div>
 
-        <div class="form-group">
-            <label for="TotalPrice">Total Price:</label>
-            <input type="text" class="form-control" id="TotalPrice" value="@Model.TotalPrice" readonly />
+        <!-- Price Details using Bootstrap Cards -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Price Details</h5>
+                <p class="card-text">Total Price: @Model.TotalPrice</p>
+                <p class="card-text" id="convertedPrice">Converted Price: @Model.ConvertedPrice</p>
+                <p class="card-text" id="finalPrice">Final Price (with Taxes): @Model.FinalPrice</p>
+            </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Confirm Order</button>
+        <button type="submit" class="btn btn-primary mt-3">Confirm Order</button>
     </form>
 </div>
+
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- JavaScript for dynamic price updates -->
+<script>
+    function updatePrice(destinationCountry, totalPrice) {
+        $.ajax({
+            url: '/Order/GetConvertedAndFinalPrice',
+            type: 'GET',
+            data: { totalPrice: totalPrice, destinationCountry: destinationCountry },
+            success: function (data) {
+                $('#convertedPrice').text("Converted Price: " + data.convertedPrice.toFixed(2));
+                $('#finalPrice').text("Final Price (with Taxes): " + data.finalPrice.toFixed(2));
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        var destinationCountry = $('#DestinationCountry').val();
+        var totalPrice = @Model.TotalPrice; // Fetch this from your Razor model
+
+        // Update based on the default value.
+        updatePrice(destinationCountry, totalPrice);
+
+        $('#DestinationCountry').on('change', function () {
+            destinationCountry = $(this).val();
+            updatePrice(destinationCountry, totalPrice);
+        });
+    });
+</script>
+

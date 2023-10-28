@@ -169,7 +169,5 @@ namespace EcomRevisited.Services
                 await _cartRepository.UpdateAsync(cart);
             }
         }
-
-
     }
 }

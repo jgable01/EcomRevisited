@@ -114,7 +114,10 @@ namespace EcomRevisited.Services
                     // Apply country-specific rates
                     double convertedPrice = order.TotalPrice * country.ConversionRate;
                     double taxAmount = convertedPrice * country.TaxRate;
-                    order.TotalPrice = convertedPrice + taxAmount;
+
+                    // Update Converted and Final Price
+                    order.ConvertedPrice = convertedPrice;
+                    order.FinalPrice = convertedPrice + taxAmount;
 
                     await _orderRepository.AddAsync(order);
                     transaction.Commit();  // Commit the transaction if everything is successful
@@ -134,8 +137,6 @@ namespace EcomRevisited.Services
                 }
             }
         }
-
-
 
         // Get all orders
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()

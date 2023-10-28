@@ -12,5 +12,7 @@ namespace EcomRevisited.Models
         public string MailingCode { get; set; }
         public double TotalPrice { get; set; }
         public int NumberOfItems { get; set; }
+        public double ConvertedPrice { get; set; }
+        public double FinalPrice { get; set; }
     }
 }

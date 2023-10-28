@@ -46,8 +46,6 @@ namespace EcomRevisited.Controllers
             return View(viewModel);
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> Create(Guid cartId, string destinationCountry, string mailingCode, string address)
         {
@@ -72,28 +70,20 @@ namespace EcomRevisited.Controllers
                 return View(new List<OrderViewModel>());
             }
 
-            var viewModel = orders.Select(o =>
+            var viewModel = orders.Select(o => new OrderViewModel
             {
-                Console.WriteLine($"Order ID: {o?.Id ?? Guid.Empty}");
-                Console.WriteLine($"Order Items count: {o?.NumberOfItems ?? 0}");
-                Console.WriteLine($"Order DestinationCountry: {o?.DestinationCountry}");
-                Console.WriteLine($"Order TotalPrice: {o?.TotalPrice ?? 0}");
-
-                return new OrderViewModel
-                {
-                    Id = o?.Id ?? Guid.Empty,
-                    NumberOfItems = o.NumberOfItems,
-                    DestinationCountry = o?.DestinationCountry,
-                    TotalPrice = o?.TotalPrice ?? 0,
-                    MailingCode = o?.MailingCode,
-                    Address = o?.Address
-                };
+                Id = o.Id,
+                NumberOfItems = o.NumberOfItems,
+                DestinationCountry = o.DestinationCountry,
+                TotalPrice = o.TotalPrice,
+                MailingCode = o.MailingCode,
+                Address = o.Address,
+                ConvertedPrice = o.ConvertedPrice,
+                FinalPrice = o.FinalPrice
             }).ToList();
 
             return View(viewModel);
         }
-
-
 
         public async Task<IActionResult> ConfirmOrder(Guid cartId)
         {
@@ -119,10 +109,13 @@ namespace EcomRevisited.Controllers
                     Price = item.Product.Price
                 }).ToList(),
                 TotalPrice = totalPrice,
+                ConvertedPrice = 0,
+                FinalPrice = 0
             };
 
             return View(model);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> ConfirmOrder(ConfirmOrderViewModel model, Guid cartId)
@@ -133,25 +126,19 @@ namespace EcomRevisited.Controllers
                 if (country == null)
                 {
                     ModelState.AddModelError("DestinationCountry", "Invalid country selected.");
-                    // Debug or log here
                     return await ReturnToConfirmOrderView(model, cartId);
                 }
 
-                double convertedPrice = model.TotalPrice * country.ConversionRate;
-                double finalPrice = convertedPrice + (convertedPrice * country.TaxRate);
+                // Calculate Converted and Final Price based on selected country
+                double convertedPrice = Math.Round(model.TotalPrice * country.ConversionRate, 2);
+                double finalPrice = Math.Round(convertedPrice + (convertedPrice * country.TaxRate), 2);
+
                 model.ConvertedPrice = convertedPrice;
                 model.FinalPrice = finalPrice;
 
                 var isSuccess = await _orderService.ConfirmOrderAsync(model);
                 if (isSuccess)
                 {
-                    // Create the new order after successfully confirming it
-                    var newOrderId = await _orderService.CreateOrderAsync(cartId, model.DestinationCountry, model.MailingCode, model.Address);
-                    if (newOrderId == Guid.Empty)
-                    {
-                        ModelState.AddModelError("", "Could not create the order. Please try again.");
-                        return await ReturnToConfirmOrderView(model, cartId);
-                    }
                     return RedirectToAction("List");
                 }
                 else
@@ -161,7 +148,7 @@ namespace EcomRevisited.Controllers
             }
             else
             {
-                throw new Exception("Invalid model state");
+                ModelState.AddModelError("", "Invalid model state");
             }
 
             return await ReturnToConfirmOrderView(model, cartId);
@@ -188,6 +175,20 @@ namespace EcomRevisited.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetConvertedAndFinalPrice(double totalPrice, string destinationCountry)
+        {
+            var country = await _countryService.GetCountryByNameAsync(destinationCountry);
+            if (country == null)
+            {
+                return NotFound();
+            }
+
+            double convertedPrice = Math.Round(totalPrice * country.ConversionRate, 2);
+            double finalPrice = Math.Round(convertedPrice + (convertedPrice * country.TaxRate), 2);
+
+            return Json(new { ConvertedPrice = convertedPrice, FinalPrice = finalPrice });
+        }
 
     }
 }

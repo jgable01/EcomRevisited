@@ -11,4 +11,5 @@ public class ConfirmOrderViewModel
     public string DestinationCountry { get; set; }
     public string Address { get; set; }
     public string MailingCode { get; set; }
+
 }

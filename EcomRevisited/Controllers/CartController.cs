@@ -26,7 +26,7 @@ namespace EcomRevisited.Controllers
         {
             // For demonstration, using a hardcoded cart ID
             // In a real-world application, we would fetch this from a database
-            Guid cartId = Guid.Parse("12345678-1234-5678-1234-567812345678");  
+            Guid cartId = Guid.Parse("12345678-1234-5678-1234-567812345678");
 
             // Check if the cart exists
             var cart = await _cartService.GetCartAsync(cartId);
@@ -34,7 +34,7 @@ namespace EcomRevisited.Controllers
             {
                 // If the cart doesn't exist, create a new one
                 cart = new Cart { Id = cartId };
-                await _cartService.CreateCartAsync(cart);  
+                await _cartService.CreateCartAsync(cart);
             }
 
             return cartId;
@@ -66,7 +66,7 @@ namespace EcomRevisited.Controllers
                         ProductName = product.Name,
                         Quantity = item.Quantity,
                         Price = product.Price,
-                        ImageUrl = product.ImageUrl  
+                        ImageUrl = product.ImageUrl
                     });
                 }
             }
