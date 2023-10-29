@@ -54,88 +54,7 @@ namespace EcomRevisited.Services
 
         public async Task<Guid> CreateOrderAsync(Guid cartId, string destinationCountry, string mailingCode, string address)
         {
-            using (var transaction = await _context.Database.BeginTransactionAsync())  // Start a new transaction
-            {
-                try
-                {
-                    // Check for null or empty parameters
-                    if (cartId == Guid.Empty || string.IsNullOrEmpty(destinationCountry))
-                    {
-                        Console.WriteLine("Invalid parameters.");
-                        // Roll back the transaction
-                        transaction.Rollback();
-                        return Guid.Empty;
-                    }
-
-                    // Fetch cart and validate it exists
-                    var cart = await _cartRepository.GetByIdAsync(cartId);
-                    cart = await _cartRepository.GetByIdWithIncludesAsync(cart => cart.Id == cartId, "CartItems.Product");
-                    if (cart == null)
-                    {
-                        Console.WriteLine("Cart not found.");
-                        // Roll back the transaction
-                        transaction.Rollback();
-                        return Guid.Empty;
-                    }
-
-                    // Validate the cart is not empty
-                    if (!cart.CartItems.Any())
-                    {
-                        Console.WriteLine("Cart is empty.");
-                        // Roll back the transaction
-                        transaction.Rollback();
-                        return Guid.Empty;
-                    }
-
-                    // Fetch country and validate it exists
-                    var country = await _countryService.GetCountryByNameAsync(destinationCountry);
-                    if (country == null)
-                    {
-                        Console.WriteLine("Destination country not found.");
-                        // Roll back the transaction
-                        transaction.Rollback();
-                        return Guid.Empty;
-                    }
-
-                    // Initialize an Order object from the Cart
-                    Order order = new()
-                    {
-                        OrderItems = new List<OrderItem>(),
-                        DestinationCountry = destinationCountry,
-                        Address = address,
-                        MailingCode = mailingCode,
-                        // Updated code to calculate total number of items in the cart
-                        NumberOfItems = cart.CartItems.Sum(item => item.Quantity),
-                    };
-
-                    var totalPrice = await _cartService.CalculateTotalPriceAsync(cart);
-                    order.TotalPrice = totalPrice;
-
-                    // Apply country-specific rates
-                    double convertedPrice = order.TotalPrice * country.ConversionRate;
-                    double taxAmount = convertedPrice * country.TaxRate;
-
-                    // Update Converted and Final Price
-                    order.ConvertedPrice = convertedPrice;
-                    order.FinalPrice = convertedPrice + taxAmount;
-
-                    await _orderRepository.AddAsync(order);
-                    transaction.Commit();  // Commit the transaction if everything is successful
-
-                    // Empty the cart
-                    cart.CartItems.Clear();
-                    await _cartRepository.UpdateAsync(cart);
-
-                    Console.WriteLine($"Successfully created order with ID: {order.Id}");
-                    return order.Id;
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();  // Roll back the transaction in case of failure
-                    Console.WriteLine($"An error occurred: {ex.Message}");
-                    return Guid.Empty;
-                }
-            }
+            return await CreateOrderFromCartAsync(cartId, destinationCountry, mailingCode, address);
         }
 
         // Get all orders
@@ -175,35 +94,111 @@ namespace EcomRevisited.Services
 
         public async Task<bool> ConfirmOrderAsync(ConfirmOrderViewModel model)
         {
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            try
             {
-                try
+                Guid newOrderId = await CreateOrderFromCartAsync(model.CartId, model.DestinationCountry, model.MailingCode, model.Address);
+                if (newOrderId != Guid.Empty)
                 {
-                    // Create new Order entity
-                    var newOrder = new Order
-                    {
-                        DestinationCountry = model.DestinationCountry,
-                        Address = model.Address,
-                        MailingCode = model.MailingCode,
-                        TotalPrice = model.FinalPrice,
-                        OrderItems = model.OrderItems.Select(x => new OrderItem
-                        {
-                            ProductId = x.ProductId,  // Use the ProductId from the ViewModel
-                            Quantity = x.Quantity
-                        }).ToList()
-                    };
-
-                    await _orderRepository.AddAsync(newOrder);
-                    transaction.Commit();
-
                     return true;
                 }
-                catch (Exception)
+                else
                 {
-                    transaction.Rollback();
                     return false;
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
+            }
         }
+
+
+        public async Task<Guid> CreateOrderFromCartAsync(Guid cartId, string destinationCountry, string mailingCode, string address)
+        {
+            using (var transaction = await _context.Database.BeginTransactionAsync())  // Start a new transaction
+            {
+                try
+                {
+                    // Check for null or empty parameters
+                    if (cartId == Guid.Empty || string.IsNullOrEmpty(destinationCountry))
+                    {
+                        Console.WriteLine("Invalid parameters.");
+                        transaction.Rollback();
+                        return Guid.Empty;
+                    }
+
+                    // Fetch cart and validate it exists
+                    var cart = await _cartRepository.GetByIdWithIncludesAsync(cart => cart.Id == cartId, "CartItems.Product");
+                    if (cart == null)
+                    {
+                        Console.WriteLine("Cart not found.");
+                        transaction.Rollback();
+                        return Guid.Empty;
+                    }
+
+                    // Validate the cart is not empty
+                    if (!cart.CartItems.Any())
+                    {
+                        Console.WriteLine("Cart is empty.");
+                        transaction.Rollback();
+                        return Guid.Empty;
+                    }
+
+                    // Fetch country and validate it exists
+                    var country = await _countryService.GetCountryByNameAsync(destinationCountry);
+                    if (country == null)
+                    {
+                        Console.WriteLine("Destination country not found.");
+                        transaction.Rollback();
+                        return Guid.Empty;
+                    }
+
+                    // Initialize an Order object from the Cart
+                    Order order = new Order
+                    {
+                        OrderItems = cart.CartItems.Select(ci => new OrderItem
+                        {
+                            ProductId = ci.ProductId,
+                            Quantity = ci.Quantity
+                        }).ToList(),
+                        DestinationCountry = destinationCountry,
+                        Address = address,
+                        MailingCode = mailingCode,
+                        NumberOfItems = cart.CartItems.Sum(item => item.Quantity)
+                    };
+
+                    // Calculate total price based on cart items
+                    var totalPrice = cart.CartItems.Sum(item => item.Product.Price * item.Quantity);
+                    order.TotalPrice = totalPrice;
+
+                    // Apply country-specific rates
+                    double convertedPrice = order.TotalPrice * country.ConversionRate;
+                    double taxAmount = convertedPrice * country.TaxRate;
+
+                    // Update Converted and Final Price
+                    order.ConvertedPrice = convertedPrice;
+                    order.FinalPrice = convertedPrice + taxAmount;
+
+                    // Add the order to the repository and commit the transaction
+                    await _orderRepository.AddAsync(order);
+                    transaction.Commit();
+
+                    // Empty the cart
+                    cart.CartItems.Clear();
+                    await _cartRepository.UpdateAsync(cart);
+
+                    Console.WriteLine($"Successfully created order with ID: {order.Id}");
+                    return order.Id;
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();  // Roll back the transaction in case of failure
+                    Console.WriteLine($"An error occurred: {ex.Message}");
+                    return Guid.Empty;
+                }
+            }
+        }
+
     }
 }

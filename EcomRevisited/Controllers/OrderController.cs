@@ -106,7 +106,7 @@ namespace EcomRevisited.Controllers
                     ProductId = item.Product.Id,
                     ProductTitle = item.Product.Name,
                     Quantity = item.Quantity,
-                    Price = item.Product.Price
+                    Price = item.Product.Price,
                 }).ToList(),
                 TotalPrice = totalPrice,
                 ConvertedPrice = 0,
