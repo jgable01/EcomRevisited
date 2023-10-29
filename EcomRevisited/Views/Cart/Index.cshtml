@@ -12,6 +12,17 @@
     }
 </style>
 
+<!-- JavaScript Function for dynamic inventory updates-->
+<script>
+    async function updateIncreaseButton(productId, quantity) {
+        const response = await fetch(`/api/products/${productId}/available-quantity`);
+        const availableQuantity = await response.json();
+        const totalBeforeAddition = availableQuantity + quantity;
+        const increaseButton = document.querySelector(`#increase-button-${productId}`);
+        increaseButton.disabled = (quantity + 1 > totalBeforeAddition);
+    }
+</script>
+
 <div class="container">
     <h2 class="my-4">Your Shopping Cart</h2>
     <div class="table-responsive">
@@ -42,9 +53,9 @@
                             <td>
                                 <form asp-action="IncreaseProductQuantity" asp-controller="Cart" method="post">
                                     <input type="hidden" name="productId" value="@item.ProductId" />
-                                    <button class="btn btn-info" type="submit">+</button>
+                                    <button id="increase-button-@item.ProductId" class="btn btn-info" type="submit" @(item.IsIncreaseDisabled ? "disabled" : "")>+</button>
                                 </form>
-                                <form asp-action="DecreaseProductQuantity" asp-controller="Cart" method="post">
+                                <form asp-action="DecreaseProductQuantity" asp-controller="Cart" method="post" onsubmit="updateIncreaseButton('@item.ProductId', @item.Quantity)">
                                     <input type="hidden" name="productId" value="@item.ProductId" />
                                     <button class="btn btn-warning" type="submit">-</button>
                                 </form>

@@ -35,11 +35,11 @@ namespace EcomRevisited.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("c8840611-9ff4-4c16-9daf-631e4958680f")
+                            Id = new Guid("83e89c35-5d13-4f66-b742-6ccc20e7f4d9")
                         },
                         new
                         {
-                            Id = new Guid("94306a99-bcd0-4c34-8185-fae513e0457f")
+                            Id = new Guid("016765b0-4079-48a5-a1e7-174c1019a9ed")
                         });
                 });
 
@@ -90,21 +90,21 @@ namespace EcomRevisited.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("7a3afe90-dc82-4e2d-bc23-12f9302b0d92"),
+                            Id = new Guid("24857574-b64f-4bcb-96d1-715f535ea3bc"),
                             ConversionRate = 1.0,
                             Name = "Canada",
                             TaxRate = 0.070000000000000007
                         },
                         new
                         {
-                            Id = new Guid("9bfb4a05-3738-421c-a278-3ff94f3fb461"),
+                            Id = new Guid("85d1f152-94e7-483f-98c8-687dd799d038"),
                             ConversionRate = 1.1000000000000001,
                             Name = "United States",
                             TaxRate = 0.050000000000000003
                         },
                         new
                         {
-                            Id = new Guid("12c7f898-f70b-46c8-8e88-d69ba6f7568a"),
+                            Id = new Guid("ae89423d-20a6-420a-8d5e-a841821f6a9d"),
                             ConversionRate = 1.3,
                             Name = "United Kingdom",
                             TaxRate = 0.10000000000000001
@@ -199,7 +199,7 @@ namespace EcomRevisited.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("5c8f99f3-bc5b-4459-b897-0bbf93269ae0"),
+                            Id = new Guid("328a220d-834e-4862-9608-120ceec44c26"),
                             AvailableQuantity = 10,
                             Description = "High performance laptop",
                             ImageUrl = "https://www.lifeofpix.com/wp-content/uploads/2018/05/p-244-ae-mint-005-1600x1169.jpg",
@@ -208,7 +208,7 @@ namespace EcomRevisited.Migrations
                         },
                         new
                         {
-                            Id = new Guid("a7b733e5-c8f4-4326-8fce-a692bd72414a"),
+                            Id = new Guid("042f5428-b44a-47b3-b6f8-abd8f7b0cea1"),
                             AvailableQuantity = 20,
                             Description = "Latest model",
                             ImageUrl = "https://media.istockphoto.com/id/1377877660/vector/realistic-mobile-phone-mockup-cellphone-app-template-isolated-stock-vector.jpg?s=612x612&w=0&k=20&c=Xw2padf6w33h9eQFFz83PL0reGEMdu1FtFsuI5G5Nf0=",
@@ -217,7 +217,7 @@ namespace EcomRevisited.Migrations
                         },
                         new
                         {
-                            Id = new Guid("d531e956-1460-4601-94ae-dd2d6a2f858a"),
+                            Id = new Guid("f900f369-4dc0-43dd-b5e8-f718cb8116ab"),
                             AvailableQuantity = 30,
                             Description = "Wireless",
                             ImageUrl = "https://images.pexels.com/photos/3945667/pexels-photo-3945667.jpeg?cs=srgb&dl=pexels-cottonbro-studio-3945667.jpg&fm=jpg",
@@ -226,7 +226,7 @@ namespace EcomRevisited.Migrations
                         },
                         new
                         {
-                            Id = new Guid("e538ce0e-273b-49b0-826d-431004edc63d"),
+                            Id = new Guid("99cc5249-920f-401b-aacb-aa4836a375a1"),
                             AvailableQuantity = 5,
                             Description = "Digital SLR",
                             ImageUrl = "https://images.pexels.com/photos/274973/pexels-photo-274973.jpeg?cs=srgb&dl=pexels-pixabay-274973.jpg&fm=jpg",
@@ -235,7 +235,7 @@ namespace EcomRevisited.Migrations
                         },
                         new
                         {
-                            Id = new Guid("12a1ee3a-0e08-4c42-8a8f-d24e7d78f743"),
+                            Id = new Guid("9699e61b-0da0-4fac-bf34-90b521d0d6fa"),
                             AvailableQuantity = 15,
                             Description = "With fitness tracking",
                             ImageUrl = "https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?cs=srgb&dl=pexels-alexandr-borecky-393047.jpg&fm=jpg",

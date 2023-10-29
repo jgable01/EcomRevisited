@@ -47,7 +47,9 @@ namespace EcomRevisited.Migrations
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MailingCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TotalPrice = table.Column<double>(type: "float", nullable: false),
-                    NumberOfItems = table.Column<int>(type: "int", nullable: false)
+                    NumberOfItems = table.Column<int>(type: "int", nullable: false),
+                    ConvertedPrice = table.Column<double>(type: "float", nullable: false),
+                    FinalPrice = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -119,8 +121,8 @@ namespace EcomRevisited.Migrations
                 column: "Id",
                 values: new object[]
                 {
-                    new Guid("1f6fe05c-ad70-4993-8108-5fff52aff96d"),
-                    new Guid("8d7dab5e-0bb4-42e2-b2d2-d99882e6405f")
+                    new Guid("016765b0-4079-48a5-a1e7-174c1019a9ed"),
+                    new Guid("83e89c35-5d13-4f66-b742-6ccc20e7f4d9")
                 });
 
             migrationBuilder.InsertData(
@@ -128,9 +130,9 @@ namespace EcomRevisited.Migrations
                 columns: new[] { "Id", "ConversionRate", "Name", "TaxRate" },
                 values: new object[,]
                 {
-                    { new Guid("01c5ca0b-273e-452b-a76b-d0c3d92978f8"), 1.1000000000000001, "United States", 0.050000000000000003 },
-                    { new Guid("237cdf59-8e6d-4fe9-ba8d-608243362a44"), 1.0, "Canada", 0.070000000000000007 },
-                    { new Guid("7cf68b5c-8ce2-467f-8c6e-0df72c037753"), 1.3, "United Kingdom", 0.10000000000000001 }
+                    { new Guid("24857574-b64f-4bcb-96d1-715f535ea3bc"), 1.0, "Canada", 0.070000000000000007 },
+                    { new Guid("85d1f152-94e7-483f-98c8-687dd799d038"), 1.1000000000000001, "United States", 0.050000000000000003 },
+                    { new Guid("ae89423d-20a6-420a-8d5e-a841821f6a9d"), 1.3, "United Kingdom", 0.10000000000000001 }
                 });
 
             migrationBuilder.InsertData(
@@ -138,11 +140,11 @@ namespace EcomRevisited.Migrations
                 columns: new[] { "Id", "AvailableQuantity", "Description", "ImageUrl", "Name", "Price" },
                 values: new object[,]
                 {
-                    { new Guid("1644824e-e3bc-4892-8041-00ea6cdb77d3"), 20, "Latest model", "https://media.istockphoto.com/id/1377877660/vector/realistic-mobile-phone-mockup-cellphone-app-template-isolated-stock-vector.jpg?s=612x612&w=0&k=20&c=Xw2padf6w33h9eQFFz83PL0reGEMdu1FtFsuI5G5Nf0=", "Smartphone", 800.0 },
-                    { new Guid("5d0f679f-1be1-4865-9b58-2dacdb4268d2"), 30, "Wireless", "https://images.pexels.com/photos/3945667/pexels-photo-3945667.jpeg?cs=srgb&dl=pexels-cottonbro-studio-3945667.jpg&fm=jpg", "Headphones", 150.0 },
-                    { new Guid("7c9e176f-496c-4151-a1d3-27aeeabbaccd"), 10, "High performance laptop", "https://www.lifeofpix.com/wp-content/uploads/2018/05/p-244-ae-mint-005-1600x1169.jpg", "Laptop", 1000.0 },
-                    { new Guid("cffd22ff-b06f-43e8-8ccf-e4cbb3b23783"), 5, "Digital SLR", "https://images.pexels.com/photos/274973/pexels-photo-274973.jpeg?cs=srgb&dl=pexels-pixabay-274973.jpg&fm=jpg", "Camera", 1200.0 },
-                    { new Guid("f86511b0-5408-40a3-9b62-97764cdb31f4"), 15, "With fitness tracking", "https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?cs=srgb&dl=pexels-alexandr-borecky-393047.jpg&fm=jpg", "Smartwatch", 250.0 }
+                    { new Guid("042f5428-b44a-47b3-b6f8-abd8f7b0cea1"), 20, "Latest model", "https://media.istockphoto.com/id/1377877660/vector/realistic-mobile-phone-mockup-cellphone-app-template-isolated-stock-vector.jpg?s=612x612&w=0&k=20&c=Xw2padf6w33h9eQFFz83PL0reGEMdu1FtFsuI5G5Nf0=", "Smartphone", 800.0 },
+                    { new Guid("328a220d-834e-4862-9608-120ceec44c26"), 10, "High performance laptop", "https://www.lifeofpix.com/wp-content/uploads/2018/05/p-244-ae-mint-005-1600x1169.jpg", "Laptop", 1000.0 },
+                    { new Guid("9699e61b-0da0-4fac-bf34-90b521d0d6fa"), 15, "With fitness tracking", "https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?cs=srgb&dl=pexels-alexandr-borecky-393047.jpg&fm=jpg", "Smartwatch", 250.0 },
+                    { new Guid("99cc5249-920f-401b-aacb-aa4836a375a1"), 5, "Digital SLR", "https://images.pexels.com/photos/274973/pexels-photo-274973.jpeg?cs=srgb&dl=pexels-pixabay-274973.jpg&fm=jpg", "Camera", 1200.0 },
+                    { new Guid("f900f369-4dc0-43dd-b5e8-f718cb8116ab"), 30, "Wireless", "https://images.pexels.com/photos/3945667/pexels-photo-3945667.jpeg?cs=srgb&dl=pexels-cottonbro-studio-3945667.jpg&fm=jpg", "Headphones", 150.0 }
                 });
 
             migrationBuilder.CreateIndex(

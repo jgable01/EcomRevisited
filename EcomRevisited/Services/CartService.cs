@@ -136,13 +136,22 @@ namespace EcomRevisited.Services
             var cart = await _cartRepository.GetByIdAsync(cartId);
             var itemToUpdate = cart.CartItems.FirstOrDefault(item => item.ProductId == productId);
             var product = await _productService.GetProductByIdAsync(productId);
+            var isAvailable = await _productService.IsProductAvailableAsync(productId, 1);
 
             if (itemToUpdate != null && product != null)
             {
-                if (itemToUpdate.Quantity + 1 <= product.AvailableQuantity)
+                if (isAvailable)
                 {
                     itemToUpdate.Quantity += 1;
                     await _cartRepository.UpdateAsync(cart);
+
+                    // Decrease the available quantity of the product in the inventory
+                    bool success = await _productService.UpdateProductQuantity(productId, -1); // Decrease by 1
+                    if (!success)
+                    {
+                        throw new Exception("Failed to update product quantity");
+                    }
+
                     return true;
                 }
                 else
@@ -154,6 +163,7 @@ namespace EcomRevisited.Services
             return false;
         }
 
+
         // Decrease product quantity in the cart
         public async Task DecreaseProductQuantityAsync(Guid cartId, Guid productId)
         {
@@ -161,13 +171,26 @@ namespace EcomRevisited.Services
             var itemToUpdate = cart.CartItems.FirstOrDefault(item => item.ProductId == productId);
             if (itemToUpdate != null)
             {
+                // Decrease cart item quantity
                 itemToUpdate.Quantity -= 1;
+
+                // If quantity is zero or less, remove the item from the cart
                 if (itemToUpdate.Quantity <= 0)
                 {
                     cart.CartItems.Remove(itemToUpdate);
                 }
+
                 await _cartRepository.UpdateAsync(cart);
+
+                // Increase the available quantity of the product in the inventory
+                bool success = await _productService.UpdateProductQuantity(productId, 1); // Increase by 1
+                if (!success)
+                {
+                    throw new Exception("Failed to update product quantity");
+                }
             }
         }
+
+
     }
 }

@@ -44,16 +44,20 @@ namespace EcomRevisited.Services
         public async Task<bool> UpdateProductQuantity(Guid productId, int deltaQuantity)
         {
             var product = await _productRepository.GetByIdAsync(productId);
-            if (product != null && product.AvailableQuantity >= deltaQuantity)
+            if (product != null)
             {
+                // Ensure we're not going below zero when reducing stock
+                if (deltaQuantity < 0 && (product.AvailableQuantity + deltaQuantity) < 0)
+                {
+                    Console.WriteLine($"Not enough stock to reduce for Product ID {productId}. Available: {product.AvailableQuantity}, Trying to reduce: {Math.Abs(deltaQuantity)}");
+                    return false;
+                }
+
                 product.AvailableQuantity += deltaQuantity;
                 await _productRepository.UpdateAsync(product);
                 return true;
             }
             return false;
         }
-
-
-
     }
 }

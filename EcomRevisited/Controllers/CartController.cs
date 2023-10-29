@@ -59,17 +59,20 @@ namespace EcomRevisited.Controllers
                 var product = await _productService.GetProductByIdAsync(item.ProductId);
                 if (product != null)
                 {
-                    totalPrice += product.Price * item.Quantity;
+                    var isIncreaseDisabled = (item.Quantity + 1 > product.AvailableQuantity + item.Quantity);
+
                     cartItemViewModels.Add(new CartItemViewModel
                     {
                         ProductId = item.ProductId,
                         ProductName = product.Name,
                         Quantity = item.Quantity,
                         Price = product.Price,
-                        ImageUrl = product.ImageUrl
+                        ImageUrl = product.ImageUrl,
+                        IsIncreaseDisabled = isIncreaseDisabled
                     });
                 }
             }
+
 
 
             var viewModel = new CartViewModel

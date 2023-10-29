@@ -39,5 +39,13 @@ namespace EcomRevisited.Controllers
 
             return View(productListViewModel);
         }
+
+        [HttpGet("api/products/{productId}/available-quantity")]
+        public async Task<IActionResult> GetAvailableQuantity(Guid productId)
+        {
+            var product = await _productService.GetProductByIdAsync(productId);
+            return Json(product.AvailableQuantity);
+        }
+
     }
 }
