@@ -16,7 +16,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<CountryService>();
 builder.Services.AddScoped<OrderService>();
-builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 // Add services for MVC and Razor Pages
 builder.Services.AddControllersWithViews();

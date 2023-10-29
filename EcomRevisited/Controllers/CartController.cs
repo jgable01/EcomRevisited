@@ -12,10 +12,10 @@ namespace EcomRevisited.Controllers
     public class CartController : Controller
     {
         private readonly CartService _cartService;
-        private readonly ProductService _productService;
+        private readonly IProductService _productService;
         private readonly OrderService _orderService;
 
-        public CartController(CartService cartService, ProductService productService, OrderService orderService)
+        public CartController(CartService cartService, IProductService productService, OrderService orderService)
         {
             _cartService = cartService;
             _productService = productService;

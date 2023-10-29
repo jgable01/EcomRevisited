@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 public class CatalogueController : Controller
 {
-    private readonly ProductService _productService;
+    private readonly IProductService _productService;
 
-    public CatalogueController(ProductService productService)
+    public CatalogueController(IProductService productService)
     {
         _productService = productService;
     }

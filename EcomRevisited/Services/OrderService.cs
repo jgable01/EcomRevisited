@@ -12,7 +12,7 @@ namespace EcomRevisited.Services
         private readonly IRepository<Cart> _cartRepository;
         private readonly IRepository<Country> _countryRepository;
         private readonly CountryService _countryService;
-        private readonly ProductService _productService;
+        private readonly IProductService _productService;
         private readonly CartService _cartService;
 
         private readonly EcomDbContext _context;
@@ -23,7 +23,7 @@ namespace EcomRevisited.Services
             IRepository<Cart> cartRepository,
             IRepository<Country> countryRepository,
             CountryService countryService,
-            ProductService productService,
+            IProductService productService,
             CartService cartService,
             EcomDbContext context)  // Inject EcomDbContext here
         {

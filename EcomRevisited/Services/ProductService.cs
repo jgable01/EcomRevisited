@@ -3,7 +3,7 @@ using EcomRevisited.Models;
 
 namespace EcomRevisited.Services
 {
-    public class ProductService
+    public class ProductService : IProductService
     {
         private readonly IRepository<Product> _productRepository;
 
