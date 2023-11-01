@@ -227,9 +227,13 @@ namespace EcomRevisited.Tests
             var cartId = Guid.NewGuid();
             var productId = Guid.NewGuid();
             var cart = new Cart { Id = cartId, CartItems = new List<CartItem> { new CartItem { ProductId = productId, Quantity = 1 } } };
+            var product = new Product { Id = productId, AvailableQuantity = 5 };  
+
             _cartRepoMock.Setup(c => c.GetByIdAsync(cartId)).ReturnsAsync(cart);
+            _productServiceMock.Setup(p => p.GetProductByIdAsync(productId)).ReturnsAsync(product);  
             _productServiceMock.Setup(p => p.IsProductAvailableAsync(productId, 1)).ReturnsAsync(true);
-            _productServiceMock.Setup(p => p.UpdateProductQuantity(productId, -1)).ReturnsAsync(true);  // Added this line
+            _productServiceMock.Setup(p => p.UpdateProductQuantity(productId, -1)).ReturnsAsync(true);
+
             var cartService = new CartService(_cartRepoMock.Object, _productRepoMock.Object, _productServiceMock.Object);
 
             // Act
@@ -238,6 +242,9 @@ namespace EcomRevisited.Tests
             // Assert
             Assert.IsTrue(result);
             _cartRepoMock.Verify(c => c.UpdateAsync(It.Is<Cart>(c => c.CartItems.First().Quantity == 2)), Times.Once());
+
+            // Verify that GetProductByIdAsync was called once
+            _productServiceMock.Verify(p => p.GetProductByIdAsync(productId), Times.Once());  
         }
 
         [TestMethod]
@@ -248,7 +255,7 @@ namespace EcomRevisited.Tests
             var productId = Guid.NewGuid();
             var cart = new Cart { Id = cartId, CartItems = new List<CartItem> { new CartItem { ProductId = productId, Quantity = 2 } } };
             _cartRepoMock.Setup(c => c.GetByIdAsync(cartId)).ReturnsAsync(cart);
-            _productServiceMock.Setup(p => p.UpdateProductQuantity(productId, 1)).ReturnsAsync(true);  // Added this line
+            _productServiceMock.Setup(p => p.UpdateProductQuantity(productId, 1)).ReturnsAsync(true);  
             var cartService = new CartService(_cartRepoMock.Object, _productRepoMock.Object, _productServiceMock.Object);
 
             // Act

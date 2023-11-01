@@ -1,31 +1,31 @@
 ﻿using EcomRevisited.Data;
 using EcomRevisited.Models;
-using EcomRevisited.Services.EcomRevisited.Services;
+using EcomRevisited.Services.Interfaces;
 using System.Data.Entity;
 
 namespace EcomRevisited.Services
 {
-    public class OrderService
+    public class OrderService : IOrderService
     {
         private readonly IRepository<Order> _orderRepository;
         private readonly IRepository<Product> _productRepository;
         private readonly IRepository<Cart> _cartRepository;
         private readonly IRepository<Country> _countryRepository;
-        private readonly CountryService _countryService;
+        private readonly ICountryService _countryService;
         private readonly IProductService _productService;
-        private readonly CartService _cartService;
+        private readonly ICartService _cartService;
 
-        private readonly EcomDbContext _context;
+        private readonly IEcomDbContext _context;
 
         public OrderService(
             IRepository<Order> orderRepository,
             IRepository<Product> productRepository,
             IRepository<Cart> cartRepository,
             IRepository<Country> countryRepository,
-            CountryService countryService,
+            ICountryService countryService,
             IProductService productService,
-            CartService cartService,
-            EcomDbContext context)  // Inject EcomDbContext here
+            ICartService cartService,
+            IEcomDbContext context)  
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
@@ -116,42 +116,57 @@ namespace EcomRevisited.Services
 
         public async Task<Guid> CreateOrderFromCartAsync(Guid cartId, string destinationCountry, string mailingCode, string address)
         {
-            using (var transaction = await _context.Database.BeginTransactionAsync())  // Start a new transaction
+            if (_context == null || _context.Database == null)
+            {
+                throw new Exception("_context or _context.Database is null.");
+            }
+
+            if (_context == null || _context.Database == null)
+            {
+                throw new Exception("_context or _context.Database is null.");
+            }
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
                     // Check for null or empty parameters
                     if (cartId == Guid.Empty || string.IsNullOrEmpty(destinationCountry))
                     {
-                        Console.WriteLine("Invalid parameters.");
-                        transaction.Rollback();
-                        return Guid.Empty;
+                        throw new Exception("Invalid parameters.");
                     }
 
                     // Fetch cart and validate it exists
                     var cart = await _cartRepository.GetByIdWithIncludesAsync(cart => cart.Id == cartId, "CartItems.Product");
+
+                    if (cart == null || cart.CartItems == null)
+                    {
+                        throw new Exception("Cart or CartItems is null.");
+                    }
+                    foreach (var item in cart.CartItems)
+                    {
+                        if (item == null || item.Product == null)
+                        {
+                            throw new Exception("An item or item.Product is null.");
+                        }
+                    }
+
                     if (cart == null)
                     {
-                        Console.WriteLine("Cart not found.");
-                        transaction.Rollback();
-                        return Guid.Empty;
+                        throw new Exception("Cart not found.");
                     }
 
                     // Validate the cart is not empty
                     if (!cart.CartItems.Any())
                     {
-                        Console.WriteLine("Cart is empty.");
-                        transaction.Rollback();
-                        return Guid.Empty;
+                        throw new Exception("Cart is empty.");
                     }
 
                     // Fetch country and validate it exists
                     var country = await _countryService.GetCountryByNameAsync(destinationCountry);
                     if (country == null)
                     {
-                        Console.WriteLine("Destination country not found.");
-                        transaction.Rollback();
-                        return Guid.Empty;
+                        throw new Exception("Destination country not found.");
                     }
 
                     // Initialize an Order object from the Cart
@@ -180,7 +195,6 @@ namespace EcomRevisited.Services
                     order.ConvertedPrice = convertedPrice;
                     order.FinalPrice = convertedPrice + taxAmount;
 
-                    // Add the order to the repository and commit the transaction
                     await _orderRepository.AddAsync(order);
                     transaction.Commit();
 
@@ -188,14 +202,12 @@ namespace EcomRevisited.Services
                     cart.CartItems.Clear();
                     await _cartRepository.UpdateAsync(cart);
 
-                    Console.WriteLine($"Successfully created order with ID: {order.Id}");
                     return order.Id;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    transaction.Rollback();  // Roll back the transaction in case of failure
-                    Console.WriteLine($"An error occurred: {ex.Message}");
-                    return Guid.Empty;
+                    transaction.Rollback();
+                    throw; // Re-throw the caught exception
                 }
             }
         }

@@ -1,6 +1,6 @@
 using EcomRevisited.Data;
 using EcomRevisited.Services;
-using EcomRevisited.Services.EcomRevisited.Services; 
+using EcomRevisited.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,9 +13,10 @@ builder.Services.AddDbContext<EcomDbContext>(options =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 // Register the services
-builder.Services.AddScoped<CartService>();
-builder.Services.AddScoped<CountryService>();
-builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<IEcomDbContext, EcomDbContext>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<ICountryService, CountryService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
 // Add services for MVC and Razor Pages

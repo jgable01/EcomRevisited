@@ -1,6 +1,6 @@
 ﻿using EcomRevisited.Models;
 using EcomRevisited.Services;
-using EcomRevisited.Services.EcomRevisited.Services;
+using EcomRevisited.Services.Interfaces;
 using EcomRevisited.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,11 +12,11 @@ namespace EcomRevisited.Controllers
 {
     public class OrderController : Controller
     {
-        private readonly OrderService _orderService;
-        private readonly CartService _cartService;
-        private readonly CountryService _countryService;
+        private readonly IOrderService _orderService;
+        private readonly ICartService _cartService;
+        private readonly ICountryService _countryService;
 
-        public OrderController(OrderService orderService, CartService cartService, CountryService countryService)
+        public OrderController(IOrderService orderService, ICartService cartService, ICountryService countryService)
         {
             _orderService = orderService;
             _cartService = cartService;

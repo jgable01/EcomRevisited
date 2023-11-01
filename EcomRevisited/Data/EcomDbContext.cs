@@ -1,17 +1,34 @@
 ﻿using EcomRevisited.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EcomRevisited.Data
 {
-    public class EcomDbContext : DbContext
+    public class EcomDbContext : DbContext, IEcomDbContext
     {
         public EcomDbContext(DbContextOptions<EcomDbContext> options) : base(options)
         {
         }
+
         public DbSet<Cart> Carts { get; set; }
         public DbSet<Country> Countries { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Order> Orders { get; set; }
+
+        public IDatabaseFacadeWrapper Database => new DatabaseFacadeWrapper(base.Database);
+
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<IDatabaseTransaction> BeginTransactionAsync()
+        {
+            var efTransaction = await Database.BeginTransactionAsync();
+            return new EfDatabaseTransaction(efTransaction);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

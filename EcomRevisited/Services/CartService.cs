@@ -1,12 +1,13 @@
 ﻿using EcomRevisited.Data;
 using EcomRevisited.Models;
 using EcomRevisited.Services;
+using EcomRevisited.Services.Interfaces;
 
-public class CartService
+public class CartService : ICartService  
 {
     private readonly IRepository<Cart> _cartRepository;
     private readonly IRepository<Product> _productRepository;
-    private readonly IProductService _productService;  // Change this line
+    private readonly IProductService _productService; 
 
     public CartService(IRepository<Cart> cartRepository, IRepository<Product> productRepository, IProductService productService)  // And this line
     {
@@ -133,17 +134,17 @@ public class CartService
         var cart = await _cartRepository.GetByIdAsync(cartId);
         var itemToUpdate = cart.CartItems.FirstOrDefault(item => item.ProductId == productId);
         var product = await _productService.GetProductByIdAsync(productId);
-        var isAvailable = await _productService.IsProductAvailableAsync(productId, 1);
+        var isAvailable = await _productService.IsProductAvailableAsync(productId, 1);  
 
         if (itemToUpdate != null && product != null)
         {
-            if (isAvailable)
+            if (isAvailable) 
             {
                 itemToUpdate.Quantity += 1;
                 await _cartRepository.UpdateAsync(cart);
 
                 // Decrease the available quantity of the product in the inventory
-                bool success = await _productService.UpdateProductQuantity(productId, -1); // Decrease by 1
+                bool success = await _productService.UpdateProductQuantity(productId, -1); 
                 if (!success)
                 {
                     throw new Exception("Failed to update product quantity");
@@ -159,6 +160,7 @@ public class CartService
         }
         return false;
     }
+
 
 
     // Decrease product quantity in the cart

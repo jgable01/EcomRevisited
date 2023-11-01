@@ -1,5 +1,6 @@
 ﻿using EcomRevisited.Data;
 using EcomRevisited.Models;
+using EcomRevisited.Services.Interfaces;
 
 namespace EcomRevisited.Services
 {

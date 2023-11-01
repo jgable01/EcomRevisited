@@ -6,16 +6,17 @@ using Microsoft.AspNetCore.Http;  // Needed for session
 using EcomRevisited.Services;
 using EcomRevisited.ViewModels;
 using EcomRevisited.Models;
+using EcomRevisited.Services.Interfaces;
 
 namespace EcomRevisited.Controllers
 {
     public class CartController : Controller
     {
-        private readonly CartService _cartService;
+        private readonly ICartService _cartService;
         private readonly IProductService _productService;
-        private readonly OrderService _orderService;
+        private readonly IOrderService _orderService;
 
-        public CartController(CartService cartService, IProductService productService, OrderService orderService)
+        public CartController(ICartService cartService, IProductService productService, IOrderService orderService)
         {
             _cartService = cartService;
             _productService = productService;
@@ -51,7 +52,6 @@ namespace EcomRevisited.Controllers
                 return View(new CartViewModel());
             }
 
-            double totalPrice = 0;
             var cartItemViewModels = new List<CartItemViewModel>();
 
             foreach (var item in cart.CartItems)
@@ -73,7 +73,8 @@ namespace EcomRevisited.Controllers
                 }
             }
 
-
+            // Calculate the total price of the cart
+            double totalPrice = await _cartService.CalculateTotalPriceAsync(cart);
 
             var viewModel = new CartViewModel
             {
@@ -84,6 +85,7 @@ namespace EcomRevisited.Controllers
 
             return View(viewModel);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> AddProductToCart(Guid productId, int quantity)
