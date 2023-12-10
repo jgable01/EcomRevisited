@@ -8,7 +8,7 @@ services:
     depends_on:
       - sqlserver
     environment:
-      - ConnectionStrings__EcomConnectionString=Server=sqlserver;Database=EcomDb;User Id=SA;Password=YourStrong!Passw0rd;
+      - ConnectionStrings__EcomConnectionString=Server=sqlserver;Database=EcomDb;User Id=SA;Password=Testing6969;
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
